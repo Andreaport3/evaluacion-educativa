@@ -1,0 +1,58 @@
+export const mockTeachers = [
+  {
+    id: 1,
+    nombre: 'Dra. Ana Martínez',
+    universidad: 'Universidad Nacional',
+    materia: 'Cálculo Diferencial',
+    puntuacionPromedio: 4.8,
+    totalEvaluaciones: 124,
+    criterios: {
+      calidadClase: 0,
+      actitud: 0,
+      puntualidad: 0,
+      dominioTema: 0,
+    },
+  },
+  {
+    id: 2,
+    nombre: 'Dr. Carlos Ramírez',
+    universidad: 'Instituto Tecnológico',
+    materia: 'Programación Web',
+    puntuacionPromedio: 4.5,
+    totalEvaluaciones: 89,
+    criterios: {
+      calidadClase: 0,
+      actitud: 0,
+      puntualidad: 0,
+      dominioTema: 0,
+    },
+  },
+  {
+    id: 3,
+    nombre: 'Mtra. Laura Gómez',
+    universidad: 'Universidad del Valle',
+    materia: 'Diseño de Interfaces',
+    puntuacionPromedio: 4.7,
+    totalEvaluaciones: 67,
+    criterios: {
+      calidadClase: 0,
+      actitud: 0,
+      puntualidad: 0,
+      dominioTema: 0,
+    },
+  },
+  {
+    id: 4,
+    nombre: 'Dr. Miguel Torres',
+    universidad: 'Universidad Metropolitana',
+    materia: 'Física General',
+    puntuacionPromedio: 4.2,
+    totalEvaluaciones: 53,
+    criterios: {
+      calidadClase: 0,
+      actitud: 0,
+      puntualidad: 0,
+      dominioTema: 0,
+    },
+  },
+]
