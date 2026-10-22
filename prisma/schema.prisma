@@ -1,0 +1,142 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  STUDENT
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  DELETED
+}
+
+enum RecordStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum EvaluationStatus {
+  PENDING_REVIEW
+  PUBLISHED
+  HIDDEN
+  DELETED
+}
+
+enum EvaluationCriterion {
+  CLASS_QUALITY
+  ATTITUDE
+  PUNCTUALITY
+  SUBJECT_MASTERY
+}
+
+model User {
+  id          String       @id @default(cuid())
+  name        String       @db.VarChar(120)
+  email       String       @unique @db.VarChar(254)
+  role        UserRole     @default(STUDENT)
+  status      UserStatus   @default(ACTIVE)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  evaluations Evaluation[]
+
+  @@map("users")
+}
+
+model University {
+  id        String       @id @default(cuid())
+  name      String       @unique @db.VarChar(180)
+  location  String?      @db.VarChar(255)
+  status    RecordStatus @default(ACTIVE)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  professors Professor[]
+  courses    Course[]
+
+  @@map("universities")
+}
+
+model Professor {
+  id           String       @id @default(cuid())
+  name         String       @db.VarChar(160)
+  universityId String
+  status       RecordStatus @default(ACTIVE)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  university University       @relation(fields: [universityId], references: [id], onDelete: Restrict)
+  courses    ProfessorCourse[]
+
+  @@unique([universityId, name])
+  @@index([name])
+  @@map("professors")
+}
+
+model Course {
+  id           String       @id @default(cuid())
+  name         String       @db.VarChar(160)
+  universityId String
+  status       RecordStatus @default(ACTIVE)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  university University       @relation(fields: [universityId], references: [id], onDelete: Restrict)
+  professors ProfessorCourse[]
+
+  @@unique([universityId, name])
+  @@map("courses")
+}
+
+model ProfessorCourse {
+  professorId String
+  courseId    String
+  assignedAt  DateTime @default(now())
+
+  professor   Professor    @relation(fields: [professorId], references: [id], onDelete: Restrict)
+  course      Course       @relation(fields: [courseId], references: [id], onDelete: Restrict)
+  evaluations Evaluation[]
+
+  @@id([professorId, courseId])
+  @@index([courseId])
+  @@map("professor_courses")
+}
+
+model Evaluation {
+  id          String           @id @default(cuid())
+  userId      String?
+  professorId String
+  courseId    String
+  comment     String?          @db.VarChar(300)
+  isAnonymous Boolean          @default(true)
+  status      EvaluationStatus @default(PENDING_REVIEW)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  user        User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
+  professorCourse ProfessorCourse @relation(fields: [professorId, courseId], references: [professorId, courseId], onDelete: Restrict)
+  ratings     EvaluationRating[]
+
+  @@unique([userId, professorId, courseId])
+  @@index([professorId, courseId, status])
+  @@map("evaluations")
+}
+
+model EvaluationRating {
+  id           String              @id @default(cuid())
+  evaluationId String
+  criterion    EvaluationCriterion
+  score        Int
+
+  evaluation Evaluation @relation(fields: [evaluationId], references: [id], onDelete: Cascade)
+
+  @@unique([evaluationId, criterion])
+  @@map("evaluation_ratings")
+}
