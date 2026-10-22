@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { Check, Search, Star, X } from 'lucide-react'
+import { Check, Search, Star, X, Delete } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { TeacherAvatar } from '@/src/components/TeacherAvatar'
@@ -67,18 +67,45 @@ export default function Page() {
           <p className="mt-3 text-base leading-7 text-[#60727b]">Comparte tu experiencia y ayuda a otros estudiantes a elegir mejor.</p>
           <div className="relative mx-auto mt-8 max-w-xl">
             <Search className="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2 text-[#76909a]" />
-            <label htmlFor="search" className="sr-only">Buscar profesor o materia</label>
-            <input id="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Busca por nombre o materia..." className="h-14 w-full rounded-2xl border border-[#d9e2de] bg-white pl-12 pr-5 text-[15px] shadow-[0_8px_24px_rgba(24,59,86,0.05)] outline-none transition placeholder:text-[#9aa9ad] focus:border-[#8caea6] focus:ring-4 focus:ring-[#dceee8]" />
+            <label htmlFor="search" className="sr-only">
+              Buscar profesor o materia
+            </label>
+            <input
+              id="search"
+              type="search"
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder="Busca por nombre o materia..."
+              className="h-14 w-full rounded-2xl border border-[#d9e2de] bg-white pl-12 pr-12 text-[15px] shadow-[0_8px_24px_rgba(24,59,86,0.05)] outline-none transition placeholder:text-[#9aa9ad] focus:border-[#8caea6] focus:ring-4 focus:ring-[#dceee8]"
+            />
+            {search && (
+              <button
+                type="button"
+                onClick={() => setSearch('')}
+                aria-label="Limpiar búsqueda"
+                className="absolute right-4 top-1/2 -translate-y-1/2 rounded-md p-1 text-[#76909a] hover:bg-[#eef5f1]"
+              >
+                <X className="size-4" />
+              </button>
+            )}
           </div>
         </div>
 
-        <div className="mt-12 flex items-end justify-between gap-4 border-b border-[#dfe7e3] pb-4">
+          <div className="mt-12 flex items-end justify-between gap-4 border-b border-[#dfe7e3] pb-4">
+         
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#7d9499]">Directorio</p>
-            <h2 className="mt-1 text-2xl font-semibold">Profesores destacados</h2>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#7d9499]">
+              Directorio
+            </p>
+            <h2 className="mt-1 text-2xl font-semibold">
+              Profesores destacados
+            </h2>
           </div>
-          <span className="text-sm text-[#71868d]">{filteredProfessors.length} resultados</span>
+          <span className="text-sm text-[#71868d]">
+            {filteredProfessors.length} resultados
+          </span>
         </div>
+
 
         {filteredProfessors.length > 0 ? (
           <div className="mt-7 grid gap-5 sm:grid-cols-2">
@@ -86,7 +113,9 @@ export default function Page() {
               <article key={professor.id} className="flex min-h-[218px] flex-col justify-between rounded-2xl border border-[#dfe8e3] bg-white p-6 shadow-[0_8px_24px_rgba(24,59,86,0.045)] transition hover:-translate-y-0.5 hover:shadow-[0_12px_28px_rgba(24,59,86,0.09)]">
                 <div>
                   <div className="flex items-start justify-between gap-4">
-                    <TeacherAvatar nombre={professor.nombre} index={index} />
+
+
+
                     <div className="text-right">
                       <div className="flex items-center justify-end gap-1.5"><Star className="size-4 fill-[#e3a84b] text-[#e3a84b]" /><span className="text-lg font-semibold">{professor.puntuacionPromedio.toFixed(1)}</span></div>
                       <p className="mt-0.5 text-xs text-[#829398]">{professor.totalEvaluaciones} evaluaciones</p>
@@ -112,6 +141,9 @@ export default function Page() {
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-[#183b56]/35 p-0 backdrop-blur-[2px] sm:items-center sm:p-5" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && closeEvaluation()}>
           <section role="dialog" aria-modal="true" aria-labelledby="evaluation-title" className="max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-t-3xl bg-white p-6 shadow-2xl sm:rounded-3xl sm:p-8">
             <div className="flex items-start justify-between gap-4">
+             <TeacherAvatar nombre={professor.nombre} index={index} />
+
+
               <div><p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#7d9499]">Nueva evaluación</p><h2 id="evaluation-title" className="mt-2 text-2xl font-semibold">{selected.nombre}</h2><p className="mt-1 text-sm text-[#71868d]">{selected.materia} · {selected.universidad}</p></div>
               <button type="button" onClick={closeEvaluation} aria-label="Cerrar ventana" className="rounded-full p-2 text-[#71868d] hover:bg-[#f1f5f3] hover:text-[#183b56]"><X className="size-5" /></button>
             </div>
@@ -133,3 +165,5 @@ export default function Page() {
     </main>
   )
 }
+
+
