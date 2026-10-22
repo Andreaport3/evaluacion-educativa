@@ -4,26 +4,9 @@ import { useMemo, useState } from 'react'
 import { Check, Search, Star, X, Delete } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
-
-type Professor = {
-  id: number
-  name: string
-  university: string
-  subject: string
-  rating: number
-  reviews: number
-  initials: string
-  color: string
-}
-
-const professors: Professor[] = [
-  { id: 1, name: 'Dra. Ana Martínez', university: 'Universidad Nacional', subject: 'Cálculo Diferencial', rating: 4.8, reviews: 124, initials: 'AM', color: 'bg-[#dceee8]' },
-  { id: 2, name: 'Dr. Carlos Ramírez', university: 'Instituto Tecnológico', subject: 'Programación Web', rating: 4.5, reviews: 89, initials: 'CR', color: 'bg-[#e8e1f5]' },
-  { id: 3, name: 'Mtra. Laura Gómez', university: 'Universidad del Valle', subject: 'Diseño de Interfaces', rating: 4.7, reviews: 67, initials: 'LG', color: 'bg-[#f7e5cf]' },
-  { id: 4, name: 'Dr. Miguel Torres', university: 'Universidad Metropolitana', subject: 'Física General', rating: 4.2, reviews: 53, initials: 'MT', color: 'bg-[#dce9f3]' },
-]
-
-const criteria = ['Calidad de la clase', 'Actitud', 'Puntualidad', 'Dominio del tema']
+import { TeacherAvatar } from '@/src/components/TeacherAvatar'
+import { mockTeachers } from '@/src/data/mockData'
+import { evaluationCriteria } from '@/src/utils/teacher'
 
 function Stars({ rating, interactive = false, onChange }: { rating: number; interactive?: boolean; onChange?: (value: number) => void }) {
   return (
@@ -45,8 +28,9 @@ function Stars({ rating, interactive = false, onChange }: { rating: number; inte
 }
 
 export default function Page() {
+  const [professors] = useState(mockTeachers)
   const [search, setSearch] = useState('')
-  const [selected, setSelected] = useState<Professor | null>(null)
+  const [selected, setSelected] = useState<(typeof mockTeachers)[number] | null>(null)
   const [ratings, setRatings] = useState<Record<string, number>>({})
   const [comment, setComment] = useState('')
   const [anonymous, setAnonymous] = useState(true)
@@ -55,13 +39,13 @@ export default function Page() {
   const filteredProfessors = useMemo(() => {
     const query = search.toLowerCase().trim()
     if (!query) return professors
-    return professors.filter(({ name, subject, university }) => `${name} ${subject} ${university}`.toLowerCase().includes(query))
+    return professors.filter(({ nombre, materia, universidad }) => `${nombre} ${materia} ${universidad}`.toLowerCase().includes(query))
   }, [search])
 
-  function openEvaluation(professor: Professor) {
+  function openEvaluation(professor: (typeof mockTeachers)[number]) {
     setSelected(professor)
     setSubmitted(false)
-    setRatings(Object.fromEntries(criteria.map((criterion) => [criterion, 0])))
+    setRatings(Object.fromEntries(evaluationCriteria.map(({ id }) => [id, 0])))
     setComment('')
     setAnonymous(true)
   }
@@ -108,6 +92,7 @@ export default function Page() {
         </div>
 
           <div className="mt-12 flex items-end justify-between gap-4 border-b border-[#dfe7e3] pb-4">
+         
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#7d9499]">
               Directorio
@@ -124,23 +109,24 @@ export default function Page() {
 
         {filteredProfessors.length > 0 ? (
           <div className="mt-7 grid gap-5 sm:grid-cols-2">
-            {filteredProfessors.map((professor) => (
+            {filteredProfessors.map((professor, index) => (
               <article key={professor.id} className="flex min-h-[218px] flex-col justify-between rounded-2xl border border-[#dfe8e3] bg-white p-6 shadow-[0_8px_24px_rgba(24,59,86,0.045)] transition hover:-translate-y-0.5 hover:shadow-[0_12px_28px_rgba(24,59,86,0.09)]">
                 <div>
                   <div className="flex items-start justify-between gap-4">
 
-                    <div className={`flex size-12 shrink-0 items-center justify-center rounded-2xl ${professor.color} text-sm font-semibold text-[#183b56]`}>{professor.initials}</div>
+
+
                     <div className="text-right">
-                      <div className="flex items-center justify-end gap-1.5"><Star className="size-4 fill-[#e3a84b] text-[#e3a84b]" /><span className="text-lg font-semibold">{professor.rating.toFixed(1)}</span></div>
-                      <p className="mt-0.5 text-xs text-[#829398]">{professor.reviews} evaluaciones</p>
+                      <div className="flex items-center justify-end gap-1.5"><Star className="size-4 fill-[#e3a84b] text-[#e3a84b]" /><span className="text-lg font-semibold">{professor.puntuacionPromedio.toFixed(1)}</span></div>
+                      <p className="mt-0.5 text-xs text-[#829398]">{professor.totalEvaluaciones} evaluaciones</p>
                     </div>
                   </div>
-                  <h3 className="mt-5 text-lg font-semibold">{professor.name}</h3>
-                  <p className="mt-1 text-sm text-[#6f838a]">{professor.university}</p>
-                  <p className="mt-3 inline-flex rounded-full bg-[#eef5f1] px-3 py-1 text-xs font-medium text-[#397061]">{professor.subject}</p>
+                  <h3 className="mt-5 text-lg font-semibold">{professor.nombre}</h3>
+                  <p className="mt-1 text-sm text-[#6f838a]">{professor.universidad}</p>
+                  <p className="mt-3 inline-flex rounded-full bg-[#eef5f1] px-3 py-1 text-xs font-medium text-[#397061]">{professor.materia}</p>
                 </div>
                 <div className="mt-6 flex items-center justify-between border-t border-[#edf1ef] pt-4">
-                  <Stars rating={Math.round(professor.rating)} />
+                  <Stars rating={Math.round(professor.puntuacionPromedio)} />
                   <Button onClick={() => openEvaluation(professor)} className="rounded-xl bg-[#183b56] px-5 text-sm text-white hover:bg-[#275875]">Evaluar</Button>
                 </div>
               </article>
@@ -155,7 +141,10 @@ export default function Page() {
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-[#183b56]/35 p-0 backdrop-blur-[2px] sm:items-center sm:p-5" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && closeEvaluation()}>
           <section role="dialog" aria-modal="true" aria-labelledby="evaluation-title" className="max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-t-3xl bg-white p-6 shadow-2xl sm:rounded-3xl sm:p-8">
             <div className="flex items-start justify-between gap-4">
-              <div><p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#7d9499]">Nueva evaluación</p><h2 id="evaluation-title" className="mt-2 text-2xl font-semibold">{selected.name}</h2><p className="mt-1 text-sm text-[#71868d]">{selected.subject} · {selected.university}</p></div>
+             <TeacherAvatar nombre={professor.nombre} index={index} />
+
+
+              <div><p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#7d9499]">Nueva evaluación</p><h2 id="evaluation-title" className="mt-2 text-2xl font-semibold">{selected.nombre}</h2><p className="mt-1 text-sm text-[#71868d]">{selected.materia} · {selected.universidad}</p></div>
               <button type="button" onClick={closeEvaluation} aria-label="Cerrar ventana" className="rounded-full p-2 text-[#71868d] hover:bg-[#f1f5f3] hover:text-[#183b56]"><X className="size-5" /></button>
             </div>
             {submitted ? (
@@ -163,7 +152,7 @@ export default function Page() {
             ) : (
               <form className="mt-7 flex flex-col gap-6" onSubmit={(event) => { event.preventDefault(); submitEvaluation() }}>
                 <div className="flex flex-col gap-4">
-                  {criteria.map((criterion) => <div key={criterion} className="flex items-center justify-between gap-3"><span className="text-sm font-medium text-[#405b64]">{criterion}</span><Stars rating={ratings[criterion] ?? 0} interactive onChange={(value) => setRatings((current) => ({ ...current, [criterion]: value }))} /></div>)}
+                  {evaluationCriteria.map(({ id, label }) => <div key={id} className="flex items-center justify-between gap-3"><span className="text-sm font-medium text-[#405b64]">{label}</span><Stars rating={ratings[id] ?? 0} interactive onChange={(value) => setRatings((current) => ({ ...current, [id]: value }))} /></div>)}
                 </div>
                 <div><label htmlFor="comment" className="mb-2 block text-sm font-medium text-[#405b64]">Comentario breve <span className="font-normal text-[#99a8ab]">(opcional)</span></label><textarea id="comment" value={comment} onChange={(event) => setComment(event.target.value)} maxLength={300} rows={4} placeholder="¿Qué destacarías de sus clases?" className="w-full resize-none rounded-xl border border-[#d9e2de] px-4 py-3 text-sm outline-none placeholder:text-[#a3b0b2] focus:border-[#8caea6] focus:ring-4 focus:ring-[#dceee8]" /></div>
                 <label className="flex cursor-pointer items-center gap-3 text-sm text-[#60727b]"><input type="checkbox" checked={anonymous} onChange={(event) => setAnonymous(event.target.checked)} className="size-4 accent-[#183b56]" />Evaluación anónima</label>
