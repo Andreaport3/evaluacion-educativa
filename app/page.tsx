@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react'
 import { Check, Star, X, Delete } from 'lucide-react'
 import { Header } from '@/src/components/Header'
 import { SearchBar } from '@/src/components/SearchBar'
+import { ProfessorCard } from '@/src/components/ProfessorCard'
 
 import { Button } from '@/components/ui/button'
 import { TeacherAvatar } from '@/src/components/TeacherAvatar'
@@ -85,26 +86,12 @@ export default function Page() {
         {filteredProfessors.length > 0 ? (
           <div className="mt-7 grid gap-5 sm:grid-cols-2">
             {filteredProfessors.map((professor, index) => (
-              <article key={professor.id} className="flex min-h-[218px] flex-col justify-between rounded-2xl border border-[#dfe8e3] bg-white p-6 shadow-[0_8px_24px_rgba(24,59,86,0.045)] transition hover:-translate-y-0.5 hover:shadow-[0_12px_28px_rgba(24,59,86,0.09)]">
-                <div>
-                  <div className="flex items-start justify-between gap-4">
-
-
-
-                    <div className="text-right">
-                      <div className="flex items-center justify-end gap-1.5"><Star className="size-4 fill-[#e3a84b] text-[#e3a84b]" /><span className="text-lg font-semibold">{professor.puntuacionPromedio.toFixed(1)}</span></div>
-                      <p className="mt-0.5 text-xs text-[#829398]">{professor.totalEvaluaciones} evaluaciones</p>
-                    </div>
-                  </div>
-                  <h3 className="mt-5 text-lg font-semibold">{professor.nombre}</h3>
-                  <p className="mt-1 text-sm text-[#6f838a]">{professor.universidad}</p>
-                  <p className="mt-3 inline-flex rounded-full bg-[#eef5f1] px-3 py-1 text-xs font-medium text-[#397061]">{professor.materia}</p>
-                </div>
-                <div className="mt-6 flex items-center justify-between border-t border-[#edf1ef] pt-4">
-                  <Stars rating={Math.round(professor.puntuacionPromedio)} />
-                  <Button onClick={() => openEvaluation(professor)} className="rounded-xl bg-[#183b56] px-5 text-sm text-white hover:bg-[#275875]">Evaluar</Button>
-                </div>
-              </article>
+              <ProfessorCard
+                key={professor.id}
+                professor={professor}
+                index={index}
+                onEvaluate={openEvaluation}
+              />
             ))}
           </div>
         ) : (
@@ -116,7 +103,7 @@ export default function Page() {
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-[#183b56]/35 p-0 backdrop-blur-[2px] sm:items-center sm:p-5" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && closeEvaluation()}>
           <section role="dialog" aria-modal="true" aria-labelledby="evaluation-title" className="max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-t-3xl bg-white p-6 shadow-2xl sm:rounded-3xl sm:p-8">
             <div className="flex items-start justify-between gap-4">
-             <TeacherAvatar nombre={professor.nombre} index={index} />
+              <TeacherAvatar nombre={selected.nombre} index={0} />
 
 
               <div><p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#7d9499]">Nueva evaluación</p><h2 id="evaluation-title" className="mt-2 text-2xl font-semibold">{selected.nombre}</h2><p className="mt-1 text-sm text-[#71868d]">{selected.materia} · {selected.universidad}</p></div>
