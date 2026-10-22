@@ -1,7 +1,9 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { Check, Search, Star, X, Delete } from 'lucide-react'
+import { Check, Star, X, Delete } from 'lucide-react'
+import { Header } from '@/src/components/Header'
+import { SearchBar } from '@/src/components/SearchBar'
 
 import { Button } from '@/components/ui/button'
 import { TeacherAvatar } from '@/src/components/TeacherAvatar'
@@ -61,37 +63,10 @@ export default function Page() {
   return (
     <main className="min-h-screen bg-[#f6f8f6] text-[#183b56]">
       <section className="mx-auto max-w-6xl px-5 py-10 sm:px-8 sm:py-14">
-        <div className="mx-auto max-w-3xl text-center">
-          <div className="mx-auto mb-5 flex size-12 items-center justify-center rounded-2xl bg-[#183b56] text-lg font-bold text-white shadow-sm">MP</div>
-          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Evalúa a tus profesores</h1>
-          <p className="mt-3 text-base leading-7 text-[#60727b]">Comparte tu experiencia y ayuda a otros estudiantes a elegir mejor.</p>
-          <div className="relative mx-auto mt-8 max-w-xl">
-            <Search className="pointer-events-none absolute left-4 top-1/2 size-5 -translate-y-1/2 text-[#76909a]" />
-            <label htmlFor="search" className="sr-only">
-              Buscar profesor o materia
-            </label>
-            <input
-              id="search"
-              type="search"
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              placeholder="Busca por nombre o materia..."
-              className="h-14 w-full rounded-2xl border border-[#d9e2de] bg-white pl-12 pr-12 text-[15px] shadow-[0_8px_24px_rgba(24,59,86,0.05)] outline-none transition placeholder:text-[#9aa9ad] focus:border-[#8caea6] focus:ring-4 focus:ring-[#dceee8]"
-            />
-            {search && (
-              <button
-                type="button"
-                onClick={() => setSearch('')}
-                aria-label="Limpiar búsqueda"
-                className="absolute right-4 top-1/2 -translate-y-1/2 rounded-md p-1 text-[#76909a] hover:bg-[#eef5f1]"
-              >
-                <X className="size-4" />
-              </button>
-            )}
-          </div>
-        </div>
+        <Header />
+        <SearchBar value={search} onChange={setSearch} />
 
-          <div className="mt-12 flex items-end justify-between gap-4 border-b border-[#dfe7e3] pb-4">
+        <div className="mt-12 flex items-end justify-between gap-4 border-b border-[#dfe7e3] pb-4">
          
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#7d9499]">
