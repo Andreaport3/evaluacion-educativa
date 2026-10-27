@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useTransition } from 'react'
 import { Check, Star, X } from 'lucide-react'
 import { Header } from '@/src/components/Header'
 import { SearchBar } from '@/src/components/SearchBar'
@@ -8,10 +8,14 @@ import { ProfessorCard } from '@/src/components/ProfessorCard'
 
 import { Button } from '@/components/ui/button'
 import { TeacherAvatar } from '@/src/components/TeacherAvatar'
-import { mockTeachers } from '@/src/data/mockData'
 import { evaluationCriteria } from '@/src/utils/teacher'
+import {
+  getDashboardProfessors,
+  type DashboardProfessor,
+  submitEvaluation,
+} from '@/app/actions/evaluaciones'
 
-type Professor = (typeof mockTeachers)[number]
+type Professor = DashboardProfessor
 
 function Stars({
   rating,
@@ -52,13 +56,35 @@ function Stars({
 }
 
 export default function Page() {
-  const [professors, setProfessors] = useState<Professor[]>(mockTeachers)
+  const [professors, setProfessors] = useState<Professor[]>([])
+  const [isLoading, setIsLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [selected, setSelected] = useState<Professor | null>(null)
   const [ratings, setRatings] = useState<Record<string, number>>({})
   const [comment, setComment] = useState('')
   const [anonymous, setAnonymous] = useState(true)
   const [submitted, setSubmitted] = useState(false)
+  const [submissionError, setSubmissionError] = useState('')
+  const [isPending, startTransition] = useTransition()
+
+  useEffect(() => {
+    let ignore = false
+
+    startTransition(async () => {
+      try {
+        const data = await getDashboardProfessors()
+        if (!ignore) setProfessors(data)
+      } catch {
+        if (!ignore) setProfessors([])
+      } finally {
+        if (!ignore) setIsLoading(false)
+      }
+    })
+
+    return () => {
+      ignore = true
+    }
+  }, [])
 
   const filteredProfessors = useMemo(() => {
     const query = search.toLowerCase().trim()
@@ -71,7 +97,7 @@ export default function Page() {
   }, [search, professors])
 
   const selectedIndex = selected
-    ? professors.findIndex((professor) => professor.id === selected.id)
+    ? professors.findIndex((professor) => professor.professorId === selected.professorId)
     : -1
 
   useEffect(() => {
@@ -91,6 +117,7 @@ export default function Page() {
   function openEvaluation(professor: Professor) {
     setSelected(professor)
     setSubmitted(false)
+    setSubmissionError('')
     setRatings(
       Object.fromEntries(evaluationCriteria.map(({ id }) => [id, 0])),
     )
@@ -102,37 +129,32 @@ export default function Page() {
     setSelected(null)
   }
 
-  function submitEvaluation(event: React.FormEvent<HTMLFormElement>) {
+  function handleSubmitEvaluation(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
-    if (!selected) return
+    if (!selected || isPending) return
 
     const values = evaluationCriteria.map(({ id }) => ratings[id] ?? 0)
 
     if (values.some((rating) => rating < 1 || rating > 5)) return
 
-    const evaluationAverage =
-      values.reduce((sum, rating) => sum + rating, 0) / values.length
+    startTransition(async () => {
+      const result = await submitEvaluation({
+        professorId: selected.professorId,
+        courseId: selected.courseId,
+        ratings,
+        comment,
+        isAnonymous: anonymous,
+      })
 
-    setProfessors((current) =>
-      current.map((professor) => {
-        if (professor.id !== selected.id) return professor
+      if (!result.success) {
+        setSubmissionError(result.error)
+        return
+      }
 
-        const newTotal = professor.totalEvaluaciones + 1
-        const newAverage =
-          (professor.puntuacionPromedio * professor.totalEvaluaciones +
-            evaluationAverage) /
-          newTotal
-
-        return {
-          ...professor,
-          totalEvaluaciones: newTotal,
-          puntuacionPromedio: Number(newAverage.toFixed(2)),
-        }
-      }),
-    )
-
-    setSubmitted(true)
+      setSubmissionError('')
+      setSubmitted(true)
+    })
   }
 
   return (
@@ -155,7 +177,11 @@ export default function Page() {
           </span>
         </div>
 
-        {filteredProfessors.length > 0 ? (
+        {isLoading ? (
+          <p className="mt-12 text-center text-[#71868d]">
+            Cargando profesores...
+          </p>
+        ) : filteredProfessors.length > 0 ? (
           <div className="mt-7 grid gap-5 sm:grid-cols-2">
             {filteredProfessors.map((professor, index) => (
               <ProfessorCard
@@ -227,7 +253,8 @@ export default function Page() {
                   ¡Gracias por evaluar!
                 </h3>
                 <p className="mt-2 text-sm text-[#607b72]">
-                  Tu opinión ayuda a otros estudiantes.
+                  Tu evaluación ha sido recibida y será publicada tras ser
+                  revisada por un moderador.
                 </p>
                 <Button
                   onClick={closeEvaluation}
@@ -239,7 +266,7 @@ export default function Page() {
             ) : (
               <form
                 className="mt-7 flex flex-col gap-6"
-                onSubmit={submitEvaluation}
+                onSubmit={handleSubmitEvaluation}
               >
                 <div className="flex flex-col gap-4">
                   {evaluationCriteria.map(({ id, label }) => (
@@ -298,14 +325,21 @@ export default function Page() {
                   Evaluación anónima
                 </label>
 
+                {submissionError && (
+                  <p role="alert" className="text-sm text-red-700">
+                    {submissionError}
+                  </p>
+                )}
+
                 <Button
                   type="submit"
-                  disabled={evaluationCriteria.some(
-                    ({ id }) => !ratings[id],
-                  )}
+                  disabled={
+                    isPending ||
+                    evaluationCriteria.some(({ id }) => !ratings[id])
+                  }
                   className="h-12 rounded-xl bg-[#183b56] font-semibold text-white hover:bg-[#275875] disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  Enviar evaluación
+                  {isPending ? 'Enviando...' : 'Enviar evaluación'}
                 </Button>
               </form>
             )}
