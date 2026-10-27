@@ -2,7 +2,9 @@ import { Star } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { TeacherAvatar } from '@/src/components/TeacherAvatar'
-import type { Professor } from '@/src/utils/teacher'
+import { mockTeachers } from '@/src/data/mockData'
+
+type Professor = (typeof mockTeachers)[number]
 
 type ProfessorCardProps = {
   professor: Professor
