@@ -1,3 +1,13 @@
+export type Professor = {
+  id: string
+  courseId: string
+  nombre: string
+  universidad: string
+  materia: string
+  puntuacionPromedio: number
+  totalEvaluaciones: number
+}
+
 export const evaluationCriteria = [
   { id: 'calidadClase', label: 'Calidad de la clase' },
   { id: 'actitud', label: 'Actitud' },

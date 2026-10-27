@@ -15,9 +15,10 @@ Aplicación web para explorar profesores universitarios y compartir evaluaciones
 - **Cuatro criterios calificables:** Calidad de la clase, Actitud, Puntualidad y Dominio del tema, cada uno con una escala interactiva de 1 a 5 estrellas.
 - **Comentario y privacidad:** permite añadir un comentario breve y elegir si la evaluación es anónima.
 - **Estados de interfaz:** el formulario valida que todos los criterios tengan una puntuación antes de habilitar el envío y muestra una confirmación al completarlo.
-- **Datos de prueba:** incluye cuatro profesores de ejemplo en `src/data/mockData.js`.
+- **Datos iniciales:** incluye un seed idempotente para cargar cuatro profesores, sus universidades y materias en PostgreSQL.
+- **Moderación:** las evaluaciones se guardan con estado `PENDING_REVIEW`; no se publican ni actualizan promedios en esta etapa.
 
-> **Alcance actual:** la aplicación es una interfaz de demostración. Las evaluaciones y el mensaje de confirmación se gestionan en el estado del cliente; todavía no se guardan en una base de datos ni se envían a un servicio externo.
+> **Alcance actual:** los datos iniciales y las evaluaciones se guardan en PostgreSQL. El panel de moderación y la lectura dinámica de los datos para el dashboard pertenecen a la siguiente fase.
 
 ## Tech Stack
 
@@ -40,7 +41,11 @@ Aplicación web para explorar profesores universitarios y compartir evaluaciones
 │   └── ui/
 │       └── button.tsx          # Componente Button reutilizable
 ├── lib/
+│   ├── prisma.ts               # Singleton de Prisma Client
 │   └── utils.ts                # Utilidades compartidas
+├── prisma/
+│   ├── schema.prisma           # Modelos y estados de evaluación
+│   └── seed.ts                 # Carga de universidades, materias y profesores
 ├── src/
 │   ├── components/
 │   │   └── TeacherAvatar.tsx   # Avatar del profesor
@@ -60,7 +65,7 @@ Aplicación web para explorar profesores universitarios y compartir evaluaciones
 ### Requisitos previos
 
 - Node.js compatible con la versión instalada de Next.js.
-- npm, o pnpm si se desea usar el gestor configurado en el proyecto.
+- pnpm, gestor configurado por el proyecto.
 
 ### Clonar e instalar
 
@@ -74,17 +79,16 @@ El repositorio incluye `pnpm-lock.yaml` y declara pnpm como gestor recomendado:
 ```bash
 corepack enable
 pnpm install
+docker compose up -d database
+pnpm db:migrate
+pnpm db:generate
+pnpm exec prisma db seed
 pnpm dev
 ```
 
-Como alternativa, con npm:
-
-```bash
-npm install
-npm run dev
-```
-
 Abre [http://localhost:3000](http://localhost:3000) en el navegador para ver la aplicación.
+
+Las evaluaciones nuevas se guardan con sus cuatro calificaciones, comentario opcional y preferencia de anonimato. Todas quedan en `PENDING_REVIEW` hasta que se implemente y utilice el flujo administrativo; la confirmación del formulario indica que la evaluación debe ser revisada antes de publicarse.
 
 ### Otros comandos
 

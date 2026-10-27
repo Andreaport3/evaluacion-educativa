@@ -1,6 +1,8 @@
 export const mockTeachers = [
   {
     id: 1,
+    professorId: 'professor-ana-martinez',
+    courseId: 'course-calculo-diferencial',
     nombre: 'Dra. Ana Martínez',
     universidad: 'Universidad Nacional',
     materia: 'Cálculo Diferencial',
@@ -15,6 +17,8 @@ export const mockTeachers = [
   },
   {
     id: 2,
+    professorId: 'professor-carlos-ramirez',
+    courseId: 'course-programacion-web',
     nombre: 'Dr. Carlos Ramírez',
     universidad: 'Instituto Tecnológico',
     materia: 'Programación Web',
@@ -29,6 +33,8 @@ export const mockTeachers = [
   },
   {
     id: 3,
+    professorId: 'professor-laura-gomez',
+    courseId: 'course-diseno-interfaces',
     nombre: 'Mtra. Laura Gómez',
     universidad: 'Universidad del Valle',
     materia: 'Diseño de Interfaces',
@@ -43,6 +49,8 @@ export const mockTeachers = [
   },
   {
     id: 4,
+    professorId: 'professor-miguel-torres',
+    courseId: 'course-fisica-general',
     nombre: 'Dr. Miguel Torres',
     universidad: 'Universidad Metropolitana',
     materia: 'Física General',
