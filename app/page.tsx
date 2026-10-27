@@ -8,6 +8,7 @@ import { ProfessorCard } from '@/src/components/ProfessorCard'
 
 import { Button } from '@/components/ui/button'
 import { TeacherAvatar } from '@/src/components/TeacherAvatar'
+<<<<<<< HEAD
 import { evaluationCriteria } from '@/src/utils/teacher'
 import {
   getDashboardProfessors,
@@ -16,6 +17,19 @@ import {
 } from '@/app/actions/evaluaciones'
 
 type Professor = DashboardProfessor
+=======
+import { evaluationCriteria, type Professor } from '@/src/utils/teacher'
+
+async function fetchProfessors(): Promise<Professor[]> {
+  const response = await fetch('/api/professors')
+
+  if (!response.ok) {
+    throw new Error('No se pudo cargar el directorio de profesores.')
+  }
+
+  return (await response.json()) as Professor[]
+}
+>>>>>>> d275669 (Conecta evaluaciones con la base de datos)
 
 function Stars({
   rating,
@@ -58,12 +72,17 @@ function Stars({
 export default function Page() {
   const [professors, setProfessors] = useState<Professor[]>([])
   const [isLoading, setIsLoading] = useState(true)
+<<<<<<< HEAD
+=======
+  const [loadError, setLoadError] = useState('')
+>>>>>>> d275669 (Conecta evaluaciones con la base de datos)
   const [search, setSearch] = useState('')
   const [selected, setSelected] = useState<Professor | null>(null)
   const [ratings, setRatings] = useState<Record<string, number>>({})
   const [comment, setComment] = useState('')
   const [anonymous, setAnonymous] = useState(true)
   const [submitted, setSubmitted] = useState(false)
+<<<<<<< HEAD
   const [submissionError, setSubmissionError] = useState('')
   const [isPending, startTransition] = useTransition()
 
@@ -83,6 +102,33 @@ export default function Page() {
 
     return () => {
       ignore = true
+=======
+  const [isSaving, setIsSaving] = useState(false)
+  const [submitError, setSubmitError] = useState('')
+
+  useEffect(() => {
+    let active = true
+
+    fetchProfessors()
+      .then((data) => {
+        if (active) setProfessors(data)
+      })
+      .catch((error: unknown) => {
+        if (active) {
+          setLoadError(
+            error instanceof Error
+              ? error.message
+              : 'No se pudo cargar el directorio de profesores.',
+          )
+        }
+      })
+      .finally(() => {
+        if (active) setIsLoading(false)
+      })
+
+    return () => {
+      active = false
+>>>>>>> d275669 (Conecta evaluaciones con la base de datos)
     }
   }, [])
 
@@ -117,7 +163,11 @@ export default function Page() {
   function openEvaluation(professor: Professor) {
     setSelected(professor)
     setSubmitted(false)
+<<<<<<< HEAD
     setSubmissionError('')
+=======
+    setSubmitError('')
+>>>>>>> d275669 (Conecta evaluaciones con la base de datos)
     setRatings(
       Object.fromEntries(evaluationCriteria.map(({ id }) => [id, 0])),
     )
@@ -129,15 +179,23 @@ export default function Page() {
     setSelected(null)
   }
 
+<<<<<<< HEAD
   function handleSubmitEvaluation(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
     if (!selected || isPending) return
+=======
+  async function submitEvaluation(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+
+    if (!selected || isSaving) return
+>>>>>>> d275669 (Conecta evaluaciones con la base de datos)
 
     const values = evaluationCriteria.map(({ id }) => ratings[id] ?? 0)
 
     if (values.some((rating) => rating < 1 || rating > 5)) return
 
+<<<<<<< HEAD
     startTransition(async () => {
       const result = await submitEvaluation({
         professorId: selected.professorId,
@@ -155,6 +213,63 @@ export default function Page() {
       setSubmissionError('')
       setSubmitted(true)
     })
+=======
+    setIsSaving(true)
+    setSubmitError('')
+
+    try {
+      const response = await fetch('/api/evaluations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          professorId: selected.id,
+          courseId: selected.courseId,
+          ratings,
+          comment,
+          isAnonymous: anonymous,
+        }),
+      })
+      const result = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.error ?? 'No se pudo guardar la evaluación.')
+      }
+
+      setProfessors((current) =>
+        current.map((professor) => {
+          if (
+            professor.id !== selected.id ||
+            professor.courseId !== selected.courseId
+          ) {
+            return professor
+          }
+
+          const evaluationAverage =
+            values.reduce((sum, rating) => sum + rating, 0) / values.length
+          const newTotal = professor.totalEvaluaciones + 1
+          const newAverage =
+            (professor.puntuacionPromedio * professor.totalEvaluaciones +
+              evaluationAverage) /
+            newTotal
+
+          return {
+            ...professor,
+            totalEvaluaciones: newTotal,
+            puntuacionPromedio: Number(newAverage.toFixed(2)),
+          }
+        }),
+      )
+      setSubmitted(true)
+    } catch (error) {
+      setSubmitError(
+        error instanceof Error
+          ? error.message
+          : 'No se pudo guardar la evaluación. Inténtalo de nuevo.',
+      )
+    } finally {
+      setIsSaving(false)
+    }
+>>>>>>> d275669 (Conecta evaluaciones con la base de datos)
   }
 
   return (
@@ -181,6 +296,13 @@ export default function Page() {
           <p className="mt-12 text-center text-[#71868d]">
             Cargando profesores...
           </p>
+<<<<<<< HEAD
+=======
+        ) : loadError ? (
+          <p role="alert" className="mt-12 text-center text-red-700">
+            {loadError}
+          </p>
+>>>>>>> d275669 (Conecta evaluaciones con la base de datos)
         ) : filteredProfessors.length > 0 ? (
           <div className="mt-7 grid gap-5 sm:grid-cols-2">
             {filteredProfessors.map((professor, index) => (
@@ -315,6 +437,12 @@ export default function Page() {
                   </p>
                 </div>
 
+                {submitError && (
+                  <p role="alert" className="text-sm text-red-700">
+                    {submitError}
+                  </p>
+                )}
+
                 <label className="flex cursor-pointer items-center gap-3 text-sm text-[#60727b]">
                   <input
                     type="checkbox"
@@ -334,12 +462,20 @@ export default function Page() {
                 <Button
                   type="submit"
                   disabled={
+<<<<<<< HEAD
                     isPending ||
+=======
+                    isSaving ||
+>>>>>>> d275669 (Conecta evaluaciones con la base de datos)
                     evaluationCriteria.some(({ id }) => !ratings[id])
                   }
                   className="h-12 rounded-xl bg-[#183b56] font-semibold text-white hover:bg-[#275875] disabled:cursor-not-allowed disabled:opacity-50"
                 >
+<<<<<<< HEAD
                   {isPending ? 'Enviando...' : 'Enviar evaluación'}
+=======
+                  {isSaving ? 'Guardando...' : 'Enviar evaluación'}
+>>>>>>> d275669 (Conecta evaluaciones con la base de datos)
                 </Button>
               </form>
             )}
